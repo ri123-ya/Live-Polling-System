@@ -1,17 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sparkles } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { socket } from "../../connection";
 
 export default function LetsGetStartedTeacher() {
-  const navigate = useNavigate();
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState([
-    { id: 1, text: "Rahul Bajaj", isCorrect: true },
-    { id: 2, text: "Rahul Bajaj", isCorrect: false },
+    { id: 1, text: "", isCorrect: false },
+    { id: 2, text: "", isCorrect: false },
   ]);
   const [timeLimit, setTimeLimit] = useState("60 seconds");
+  const [questionNumber, setQuestionNumber] = useState(1);
+  const [isAsking, setIsAsking] = useState(false);
 
-  // Only one option can be correct
+  useEffect(() => {
+    // Connect socket when teacher page loads
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    // Listen for question number updates
+    return () => {
+      // Don't disconnect on unmount - teacher might navigate back
+    };
+  }, []);
+
   const setCorrectAnswer = (selectedIndex) => {
     setOptions(
       options.map((opt, idx) => ({
@@ -40,16 +52,35 @@ export default function LetsGetStartedTeacher() {
   };
 
   const askQuestion = () => {
-  if (!isFormValid()) return; // prevent navigating
-  
-  navigate("/teacher/questions");
-};
+    if (!isFormValid()) return;
+    
+    setIsAsking(true);
 
+    const questionData = {
+      questionNumber: questionNumber,
+      question: question.trim(),
+      options: options.map(opt => ({
+        id: opt.id,
+        text: opt.text.trim(),
+        isCorrect: opt.isCorrect
+      })),
+      timeLimit: timeLimit,
+      correctAnswer: options.find(opt => opt.isCorrect)?.id
+    };
+
+    // Emit question to backend
+    socket.emit("newQuestion", questionData);
+
+    // Navigate to results page with loading state
+    setTimeout(() => {
+      window.location.href = "/teacher/questions";
+    }, 500);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center px-4 pt-10">
       <div className="w-full max-w-3xl">
-        {/* Header */}
+       
         {/* Tag */}
         <div
           className="flex items-center gap-1 px-4 py-1.5 rounded-full text-white text-sm mb-6 w-fit"
@@ -60,12 +91,14 @@ export default function LetsGetStartedTeacher() {
           <Sparkles size={18} />
           Intervue Poll
         </div>
+
+        {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-semibold text-gray-900">
-            Let’s Get Started
+            Let's Get Started
           </h1>
           <p className="text-gray-600 mt-2">
-            you’ll have the ability to create and manage polls, ask questions,
+            You'll have the ability to create and manage polls, ask questions,
             and monitor your students' responses in real-time.
           </p>
         </div>
@@ -177,13 +210,13 @@ export default function LetsGetStartedTeacher() {
         <div className="flex justify-end">
           <button
             onClick={askQuestion}
-            disabled={!isFormValid()}
-            className="mt-14 text-white text-lg px-14 py-3 rounded-full font-medium shadow-lg transition-all"
+            disabled={!isFormValid() || isAsking}
+            className="mt-14 text-white text-lg px-14 py-3 rounded-full font-medium shadow-lg transition-all disabled:cursor-not-allowed"
             style={{
               background: "linear-gradient(90deg, #7765DA, #5767D0)",
             }}
           >
-            Ask Question
+            {isAsking ? "Asking..." : "Ask Question"}
           </button>
         </div>
       </div>
