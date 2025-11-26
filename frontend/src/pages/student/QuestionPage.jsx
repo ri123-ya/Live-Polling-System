@@ -5,8 +5,10 @@ export default function QuestionPage() {
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
   const [questionData, setQuestionData] = useState(null);
+  const [submitted, setSubmitted] = useState(false);        
+  const [showResults, setShowResults] = useState(false);
 
-  useEffect(() => {
+ useEffect(() => {
     setTimeout(() => {
       setQuestionData({
         questionNumber: 1,
@@ -17,6 +19,13 @@ export default function QuestionPage() {
           { id: 2, label: "Venus" },
           { id: 3, label: "Jupiter" },
           { id: 4, label: "Saturn" },
+        ],
+        // Fake live results for demo (you’ll get these from your backend later)
+        results: [
+          { id: 1, label: "Mars", percentage: 75 },
+          { id: 2, label: "Venus", percentage: 5 },
+          { id: 3, label: "Jupiter", percentage: 5 },
+          { id: 4, label: "Saturn", percentage: 15 },
         ],
       });
       setLoading(false);
@@ -98,12 +107,13 @@ export default function QuestionPage() {
       <div className="w-full max-w-xl flex justify-end">
         <button
           disabled={selected === null}
+          onClick={handleSubmit}
           className="mt-6 text-white text-lg px-14 py-3 rounded-full font-medium shadow-lg transition-all"
           style={{
             background: "linear-gradient(90deg, #7765DA, #5767D0)",
           }}
         >
-          Submit
+          {submitted && !showResults ? "Submitting..." : "Submit"}
         </button>
       </div>
 
