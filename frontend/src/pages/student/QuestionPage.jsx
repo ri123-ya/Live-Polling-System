@@ -5,10 +5,10 @@ export default function QuestionPage() {
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
   const [questionData, setQuestionData] = useState(null);
-  const [submitted, setSubmitted] = useState(false);        
+  const [submitted, setSubmitted] = useState(false);
   const [showResults, setShowResults] = useState(false);
 
- useEffect(() => {
+  useEffect(() => {
     setTimeout(() => {
       setQuestionData({
         questionNumber: 1,
@@ -20,7 +20,6 @@ export default function QuestionPage() {
           { id: 3, label: "Jupiter" },
           { id: 4, label: "Saturn" },
         ],
-        // Fake live results for demo (you’ll get these from your backend later)
         results: [
           { id: 1, label: "Mars", percentage: 75 },
           { id: 2, label: "Venus", percentage: 5 },
@@ -31,6 +30,41 @@ export default function QuestionPage() {
       setLoading(false);
     }, 1000);
   }, []);
+
+  function loadNewQuestion(newQ) {
+    setSelected(null);
+    setSubmitted(false);
+    setShowResults(false);
+    setQuestionData(newQ);
+  }
+
+  //simulate next question arriving after results (example)
+  useEffect(() => {
+    if (showResults) {
+      setTimeout(() => {
+        loadNewQuestion({
+          questionNumber: 2,
+          timer: "00:20",
+          question: "Which is the largest planet in our solar system?",
+          options: [
+            { id: 1, label: "Earth" },
+            { id: 2, label: "Jupiter" },
+            { id: 3, label: "Mars" },
+            { id: 4, label: "Venus" },
+          ],
+          results: [], // results empty initially
+        });
+      }, 4000); // wait 4s before Q2 arrives
+    }
+  }, [showResults]);
+
+  function handleSubmit() {
+    setSubmitted(true);
+
+    setTimeout(() => {
+      setShowResults(true);
+    }, 800);
+  }
 
   if (loading) {
     return (
@@ -91,31 +125,48 @@ export default function QuestionPage() {
 
         {/* Options */}
         <div className="p-4 space-y-3">
-          {questionData.options.map((option) => (
-            <Option
-              key={option.id}
-              number={option.id}
-              label={option.label}
-              active={selected === option.id}
-              onClick={() => setSelected(option.id)}
-            />
-          ))}
+          {showResults
+            ? questionData.results.map((res) => (
+                <ResultBar
+                  key={res.id}
+                  label={res.label}
+                  percentage={res.percentage}
+                />
+              ))
+            : questionData.options.map((option) => (
+                <Option
+                  key={option.id}
+                  number={option.id}
+                  label={option.label}
+                  active={selected === option.id}
+                  onClick={() => setSelected(option.id)}
+                />
+              ))}
         </div>
       </div>
 
       {/* Submit Button */}
-      <div className="w-full max-w-xl flex justify-end">
-        <button
-          disabled={selected === null}
-          onClick={handleSubmit}
-          className="mt-6 text-white text-lg px-14 py-3 rounded-full font-medium shadow-lg transition-all"
-          style={{
-            background: "linear-gradient(90deg, #7765DA, #5767D0)",
-          }}
-        >
-          {submitted && !showResults ? "Submitting..." : "Submit"}
-        </button>
-      </div>
+
+      {!showResults ? (
+        <div className="w-full max-w-xl flex justify-end">
+          <button
+            disabled={selected === null}
+            onClick={handleSubmit}
+            className="mt-6 text-white text-lg px-14 py-3 rounded-full font-medium shadow-lg transition-all"
+            style={{
+              background: "linear-gradient(90deg, #7765DA, #5767D0)",
+            }}
+          >
+            {submitted && !showResults ? "Submitting..." : "Submit"}
+          </button>
+        </div>
+      ) : (
+        <div className="w-full flex justify-center mt-6">
+          <p className="text-center text-lg font-medium text-gray-800">
+            Wait for the teacher to ask a new question..
+          </p>
+        </div>
+      )}
 
       {/* Chat Icon */}
       <button
@@ -145,6 +196,23 @@ function Option({ number, label, active, onClick }) {
       </div>
 
       <span className="text-gray-800 text-sm">{label}</span>
+    </div>
+  );
+}
+
+function ResultBar({ label, percentage }) {
+  return (
+    <div className="relative w-full bg-gray-100 border border-gray-300 rounded-lg overflow-hidden px-4 py-3">
+      {/* Background purple fill */}
+      <div
+        className="absolute left-0 top-0 h-full"
+        style={{ width: `${percentage}%`, backgroundColor: "#7765DA" }}
+      ></div>
+
+      <div className="relative flex justify-between items-center">
+        <span className="text-gray-800 font-medium">{label}</span>
+        <span className="text-gray-900 font-semibold">{percentage}%</span>
+      </div>
     </div>
   );
 }
