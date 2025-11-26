@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Sparkles } from "lucide-react";
 
-
 export default function LetsGetStartedTeacher() {
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState([
@@ -41,15 +40,15 @@ export default function LetsGetStartedTeacher() {
       <div className="w-full max-w-3xl">
         {/* Header */}
         {/* Tag */}
-          <div
-            className="flex items-center gap-1 px-4 py-1.5 rounded-full text-white text-sm mb-6 w-fit"
-            style={{
-              background: "linear-gradient(90deg, #7565D9, #4D0ACD)",
-            }}
-          >
-            <Sparkles size={18} />
-            Intervue Poll
-          </div>
+        <div
+          className="flex items-center gap-1 px-4 py-1.5 rounded-full text-white text-sm mb-6 w-fit"
+          style={{
+            background: "linear-gradient(90deg, #7565D9, #4D0ACD)",
+          }}
+        >
+          <Sparkles size={18} />
+          Intervue Poll
+        </div>
         <div className="mb-8">
           <h1 className="text-4xl font-semibold text-gray-900">
             Let’s Get Started
@@ -75,8 +74,11 @@ export default function LetsGetStartedTeacher() {
               <option>60 seconds</option>
             </select>
           </div>
-          
-          <div className="relative bg-gray-100 rounded-lg p-4">
+
+          <div
+            className="relative rounded-lg p-4"
+            style={{ background: "#F2F2F2" }}
+          >
             <textarea
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
@@ -91,20 +93,24 @@ export default function LetsGetStartedTeacher() {
         </div>
 
         {/* Options */}
-        <div className="space-y-6 mb-8">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-800">
+        <div className="space-y-4 mb-8">
+          <div className="flex items-center gap-4">
+            <div className="w-8"></div>
+            <h3
+              className="text-base font-medium text-gray-900"
+              style={{ width: "400px" }}
+            >
               Edit Options
             </h3>
-            <h3 className="text-lg font-semibold text-gray-800">
+            <h3 className="text-base font-medium text-gray-900">
               Is it Correct?
             </h3>
           </div>
 
           {options.map((option, index) => (
-            <div key={option.id} className="flex items-center gap-6">
+            <div key={option.id} className="flex items-center gap-4">
               {/* Number Circle */}
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-lg">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-semibold text-sm">
                 {index + 1}
               </div>
 
@@ -114,30 +120,34 @@ export default function LetsGetStartedTeacher() {
                 value={option.text}
                 onChange={(e) => updateOptionText(index, e.target.value)}
                 placeholder="Enter option"
-                className="flex-1 h-14 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                className="h-12 px-4 border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 text-gray-800"
+                style={{
+                  background: "#F2F2F2",
+                  width: "400px",
+                }}
               />
 
               {/* Correct Answer Radio */}
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-6 min-w-[140px]">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="radio"
-                    name="correct-answer"
+                    name={`correct-answer-${index}`}
                     checked={option.isCorrect}
                     onChange={() => setCorrectAnswer(index)}
-                    className="w-5 h-5 text-purple-600 focus:ring-purple-600"
+                    className="w-4 h-4 text-purple-600 focus:ring-purple-600"
                   />
-                  <span className="text-gray-700 font-medium">Yes</span>
+                  <span className="text-gray-700 text-sm">Yes</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="radio"
-                    name="correct-answer"
+                    name={`correct-answer-${index}`}
                     checked={!option.isCorrect}
-                    onChange={() => setCorrectAnswer(index)}
-                    className="w-5 h-5 text-gray-400"
+                    onChange={() => {}}
+                    className="w-4 h-4 text-gray-400"
                   />
-                  <span className="text-gray-500">No</span>
+                  <span className="text-gray-500 text-sm">No</span>
                 </label>
               </div>
             </div>
@@ -147,16 +157,19 @@ export default function LetsGetStartedTeacher() {
         {/* Add More Option */}
         <button
           onClick={addOption}
-          className="mb-12 text-purple-600 font-medium border border-purple-600 rounded-lg px-6 py-3 hover:bg-purple-50 transition"
+          className="mb-1 text-purple-600 font-medium border border-purple-600 rounded-lg px-6 py-3 hover:bg-purple-50 transition"
         >
           + Add More option
         </button>
 
         {/* Ask Question Button */}
-        <div className="flex justify-center">
+        <div className="flex justify-center item-left">
           <button
             onClick={askQuestion}
-            className="px-12 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold text-lg rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+            className="mt-14 text-white text-lg px-14 py-3 rounded-full font-medium shadow-lg transition-all"
+            style={{
+              background: "linear-gradient(90deg, #7765DA, #5767D0)",
+            }}
           >
             Ask Question
           </button>
