@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SparklesIcon } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 
 export default function LetsGetStartedTeacher() {
@@ -38,19 +38,18 @@ export default function LetsGetStartedTeacher() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center px-4 pt-10">
-       {/* Tag */}
+      <div className="w-full max-w-3xl">
+        {/* Header */}
+        {/* Tag */}
           <div
-            className="flex items-center gap-1 px-4 py-1.5 rounded-full text-white text-sm"
+            className="flex items-center gap-1 px-4 py-1.5 rounded-full text-white text-sm mb-6 w-fit"
             style={{
               background: "linear-gradient(90deg, #7565D9, #4D0ACD)",
             }}
           >
-            <SparklesIcon size={18} />
+            <Sparkles size={18} />
             Intervue Poll
           </div>
-      <div className="w-full max-w-3xl">
-        {/* Header */}
-        
         <div className="mb-8">
           <h1 className="text-4xl font-semibold text-gray-900">
             Let’s Get Started
