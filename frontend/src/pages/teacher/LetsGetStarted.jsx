@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function LetsGetStartedTeacher() {
+  const navigate = useNavigate();
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState([
     { id: 1, text: "Rahul Bajaj", isCorrect: true },
@@ -19,6 +21,14 @@ export default function LetsGetStartedTeacher() {
     );
   };
 
+  const isFormValid = () => {
+    const questionFilled = question.trim().length > 0;
+    const optionsFilled = options.every((opt) => opt.text.trim().length > 0);
+    const hasCorrect = options.some((opt) => opt.isCorrect);
+
+    return questionFilled && optionsFilled && hasCorrect;
+  };
+
   const updateOptionText = (index, text) => {
     const newOptions = [...options];
     newOptions[index].text = text;
@@ -30,10 +40,11 @@ export default function LetsGetStartedTeacher() {
   };
 
   const askQuestion = () => {
-    console.log("Question:", question);
-    console.log("Time Limit:", timeLimit);
-    console.log("Options:", options);
-  };
+  if (!isFormValid()) return; // prevent navigating
+  
+  navigate("/teacher/questions");
+};
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center px-4 pt-10">
@@ -166,6 +177,7 @@ export default function LetsGetStartedTeacher() {
         <div className="flex justify-end">
           <button
             onClick={askQuestion}
+            disabled={!isFormValid()}
             className="mt-14 text-white text-lg px-14 py-3 rounded-full font-medium shadow-lg transition-all"
             style={{
               background: "linear-gradient(90deg, #7765DA, #5767D0)",
