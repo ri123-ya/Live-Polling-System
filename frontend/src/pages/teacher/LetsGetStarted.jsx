@@ -61,28 +61,33 @@ export default function LetsGetStartedTeacher() {
         </div>
 
         {/* Question Input + Timer */}
-        <div className="flex gap-6 items-start mb-8">
-          <div className="flex-1 relative">
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <label className="text-lg font-semibold text-gray-900">
+              Enter your question
+            </label>
+            <select
+              value={timeLimit}
+              onChange={(e) => setTimeLimit(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600 bg-white"
+            >
+              <option>30 seconds</option>
+              <option>60 seconds</option>
+            </select>
+          </div>
+          
+          <div className="relative bg-gray-100 rounded-lg p-4">
             <textarea
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              placeholder="Enter your question"
-              className="w-full h-32 p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent text-gray-800 placeholder-gray-400"
+              placeholder="eg - What is the capital of India?"
+              className="w-full h-24 bg-transparent border-none resize-none focus:outline-none text-gray-800 placeholder-gray-500"
               maxLength={100}
             />
-            <span className="absolute bottom-3 right-4 text-sm text-gray-400">
+            <span className="absolute bottom-3 right-4 text-sm text-gray-500">
               {question.length}/100
             </span>
           </div>
-
-          <select
-            value={timeLimit}
-            onChange={(e) => setTimeLimit(e.target.value)}
-            className="h-12 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
-          >
-            <option>30 seconds</option>
-            <option>60 seconds</option>
-          </select>
         </div>
 
         {/* Options */}
