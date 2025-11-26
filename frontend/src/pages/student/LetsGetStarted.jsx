@@ -51,7 +51,7 @@ export default function LetsGetStartedStudent() {
         disabled={name.trim().length === 0}
         className="mt-14 text-white text-lg px-14 py-3 rounded-full font-medium shadow-lg transition-all"
         style={{
-          background: "linear-gradient(90deg, #7765DA, #5767D0)",
+          background: "linear-gradient(90deg, #7765DA, #5767D0)"
         }}
       >
         Continue
