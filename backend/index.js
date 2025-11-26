@@ -113,6 +113,16 @@ io.on("connection", (socket) => {
     };
     
     socket.emit("questionStarted", questionForClient);
+  } else if (activeQuestion && !questionActive) {
+    // Question exists but timer ended - send results immediately
+    const results = calculateResults();
+    socket.emit("showResults", {
+      questionNumber: activeQuestion.questionNumber,
+      question: activeQuestion.question,
+      results: results,
+      totalStudents: students.length,
+      totalAnswers: Object.keys(answers).length
+    });
   }
 
   // ===== STUDENT JOINS =====
@@ -238,10 +248,29 @@ io.on("connection", (socket) => {
 
   // ===== TEACHER REQUESTS CURRENT RESULTS =====
   socket.on("getResults", () => {
+    console.log("📡 Teacher requested current results");
+    
+    // Case 1: No question exists at all
+    if (!activeQuestion) {
+      console.log("No active question exists");
+      socket.emit("currentResults", {
+        questionNumber: null,
+        question: null,
+        results: [],
+        totalStudents: students.length,
+        totalAnswers: 0,
+        isActive: false
+      });
+      return;
+    }
+
+    // Case 2: Question exists
     const results = calculateResults();
+    console.log(`Sending results: active=${questionActive}, question="${activeQuestion.question}"`);
+    
     socket.emit("currentResults", {
-      questionNumber: activeQuestion?.questionNumber,
-      question: activeQuestion?.question,
+      questionNumber: activeQuestion.questionNumber,
+      question: activeQuestion.question,
       results: results,
       totalStudents: students.length,
       totalAnswers: Object.keys(answers).length,
