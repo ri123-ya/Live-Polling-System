@@ -163,7 +163,7 @@ export default function LetsGetStartedTeacher() {
         </button>
 
         {/* Ask Question Button */}
-        <div className="flex justify-center item-left">
+        <div className="flex justify-end">
           <button
             onClick={askQuestion}
             className="mt-14 text-white text-lg px-14 py-3 rounded-full font-medium shadow-lg transition-all"
