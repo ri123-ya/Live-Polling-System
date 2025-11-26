@@ -1,39 +1,104 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { MessageSquare, Sparkles, Timer } from "lucide-react";
 
 export default function QuestionPage() {
   const [selected, setSelected] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [questionData, setQuestionData] = useState(null);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setQuestionData({
+        questionNumber: 1,
+        timer: "00:15",
+        question: "Which planet is known as the Red Planet?",
+        options: [
+          { id: 1, label: "Mars" },
+          { id: 2, label: "Venus" },
+          { id: 3, label: "Jupiter" },
+          { id: 4, label: "Saturn" },
+        ],
+      });
+      setLoading(false);
+    }, 1000);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="w-full min-h-screen bg-white flex flex-col items-center justify-center">
+        <div
+          className="flex items-center gap-1 px-4 py-1.5 rounded-full text-white text-sm"
+          style={{ background: "linear-gradient(90deg, #7565D9, #4D0ACD)" }}
+        >
+          <Sparkles size={18} />
+          Intervue Poll
+        </div>
+
+        <div
+          className="w-16 h-16 rounded-full animate-spin mb-6 mt-6"
+          style={{
+            border: "4px solid transparent",
+            borderTop: "4px solid #7565D9",
+            borderRight: "4px solid #6A5DD3",
+            borderBottom: "4px solid #5750CD",
+          }}
+        ></div>
+
+        <p className="text-2xl font-bold text-gray-800">
+          Wait for the teacher to ask questions..
+        </p>
+
+        <button
+          className="fixed bottom-8 right-8 w-14 h-14 rounded-full flex items-center justify-center shadow-lg"
+          style={{ backgroundColor: "#5767D0" }}
+        >
+          <MessageSquare className="w-6 h-6 text-white" />
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full min-h-screen bg-white flex flex-col items-center pt-16">
-
+    <div className="w-full min-h-screen bg-white flex flex-col items-center pt-10 px-4 relative">
       {/* Question Number + Timer */}
-      <div className="flex items-center gap-4 w-[900px] mx-auto">
-        <h2 className="text-2xl font-semibold">Question 1</h2>
-        <span className="text-red-500 font-semibold text-lg">00:15</span>
+      <div className="flex items-center gap-3 w-full max-w-xl mx-auto mb-4">
+        <h2 className="text-lg font-semibold">
+          Question {questionData.questionNumber}
+        </h2>
+        <div className="flex gap-1 items-center">
+          <Timer size={14} />
+          <span className="text-red-500 font-semibold text-sm">
+            {questionData.timer}
+          </span>
+        </div>
       </div>
 
-      {/* Question Box */}
-      <div className="w-[900px] border border-gray-300 rounded-xl mt-6 pb-6">
-        
-        {/* Top heading */}
-        <div className="bg-gradient-to-r from-gray-800 to-gray-600 text-white p-4 rounded-t-xl text-lg font-medium">
-          Which planet is known as the Red Planet?
+      {/* Question Card */}
+      <div className="w-full max-w-xl border border-gray-300 rounded-xl shadow-sm pb-4">
+        {/* Gradient Header */}
+        <div className="bg-gradient-to-r from-gray-800 to-gray-600 text-white px-4 py-3 rounded-t-xl text-sm font-medium">
+          {questionData.question}
         </div>
 
         {/* Options */}
-        <div className="p-4 space-y-4">
-          <Option number={1} label="Mars" active={selected === 1} onClick={() => setSelected(1)} />
-          <Option number={2} label="Venus" active={selected === 2} onClick={() => setSelected(2)} />
-          <Option number={3} label="Jupiter" active={selected === 3} onClick={() => setSelected(3)} />
-          <Option number={4} label="Saturn" active={selected === 4} onClick={() => setSelected(4)} />
+        <div className="p-4 space-y-3">
+          {questionData.options.map((option) => (
+            <Option
+              key={option.id}
+              number={option.id}
+              label={option.label}
+              active={selected === option.id}
+              onClick={() => setSelected(option.id)}
+            />
+          ))}
         </div>
       </div>
 
       {/* Submit Button */}
-      <div className="w-[900px] flex justify-end mt-10">
+      <div className="w-full max-w-xl flex justify-end">
         <button
           disabled={selected === null}
-          className="w-[220px] py-3 rounded-full text-white text-lg disabled:opacity-50"
+          className="mt-6 text-white text-lg px-14 py-3 rounded-full font-medium shadow-lg transition-all"
           style={{
             background: "linear-gradient(90deg, #7765DA, #5767D0)",
           }}
@@ -41,6 +106,14 @@ export default function QuestionPage() {
           Submit
         </button>
       </div>
+
+      {/* Chat Icon */}
+      <button
+        className="fixed bottom-8 right-8 w-14 h-14 rounded-full flex items-center justify-center shadow-lg"
+        style={{ backgroundColor: "#5767D0" }}
+      >
+        <MessageSquare className="w-6 h-6 text-white" />
+      </button>
     </div>
   );
 }
@@ -49,19 +122,19 @@ function Option({ number, label, active, onClick }) {
   return (
     <div
       onClick={onClick}
-      className={`w-full p-4 rounded-lg border cursor-pointer flex items-center gap-4 ${
-        active ? "border-purple-500 bg-purple-50" : "border-gray-300 bg-gray-100"
+      className={`w-full px-4 py-3 rounded-lg border cursor-pointer flex items-center gap-3 transition-all ${
+        active ? "border-purple-500 bg-purple-50" : "border-gray-300 bg-gray-50"
       }`}
     >
       <div
-        className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-sm ${
+        className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs ${
           active ? "bg-purple-600" : "bg-gray-400"
         }`}
       >
         {number}
       </div>
 
-      <span className="text-gray-800">{label}</span>
+      <span className="text-gray-800 text-sm">{label}</span>
     </div>
   );
 }
