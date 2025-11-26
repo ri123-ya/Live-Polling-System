@@ -18,9 +18,9 @@ const io = new Server(server, {
 });
 
 // ============= IN-MEMORY STORAGE =============
-let students = []; // { id: socketId, name: "John" }
-let activeQuestion = null; // { questionNumber, question, options, correctAnswer, timeLimit }
-let answers = {}; // { socketId: selectedOptionId }
+let students = [];
+let activeQuestion = null;
+let answers = {};
 let questionTimer = null;
 let questionActive = false;
 let questionStartTime = null;
@@ -32,28 +32,31 @@ function calculateResults() {
 
   const totalAnswers = Object.keys(answers).length;
   
-  // Count answers for each option
+  // Count answers for each option (using display numbers 1, 2, 3, 4)
   const optionCounts = {};
-  activeQuestion.options.forEach(opt => {
-    optionCounts[opt.id] = 0;
+  activeQuestion.options.forEach((opt, index) => {
+    optionCounts[index + 1] = 0; // Use 1, 2, 3, 4 as keys
   });
 
-  Object.values(answers).forEach(answerId => {
-    if (optionCounts[answerId] !== undefined) {
-      optionCounts[answerId]++;
+  Object.values(answers).forEach(answerNumber => {
+    if (optionCounts[answerNumber] !== undefined) {
+      optionCounts[answerNumber]++;
     }
   });
 
-  // Calculate percentages
-  const results = activeQuestion.options.map(opt => ({
-    id: opt.id,
-    label: opt.text,
-    percentage: totalAnswers > 0 
-      ? Math.round((optionCounts[opt.id] / totalAnswers) * 100) 
-      : 0,
-    count: optionCounts[opt.id],
-    isCorrect: opt.isCorrect
-  }));
+  // Calculate percentages - use sequential numbers
+  const results = activeQuestion.options.map((opt, index) => {
+    const displayNumber = index + 1;
+    return {
+      id: displayNumber, // Sequential: 1, 2, 3, 4
+      label: opt.text,
+      percentage: totalAnswers > 0 
+        ? Math.round((optionCounts[displayNumber] / totalAnswers) * 100) 
+        : 0,
+      count: optionCounts[displayNumber],
+      isCorrect: opt.isCorrect
+    };
+  });
 
   return results;
 }
@@ -86,22 +89,30 @@ function getTimeRemaining() {
   const timeLimit = activeQuestion.timeLimit === "30 seconds" ? 30000 : 60000;
   const remaining = Math.max(0, timeLimit - elapsed);
   
-  return Math.ceil(remaining / 1000); // Return seconds
+  return Math.ceil(remaining / 1000);
 }
 
 // ============= SOCKET.IO EVENTS =============
 
 io.on("connection", (socket) => {
-  console.log("Client connected:", socket.id);
+  console.log("✅ Client connected:", socket.id);
 
   // Send current state to newly connected client
   socket.emit("studentsUpdate", students);
   
   if (questionActive && activeQuestion) {
-    socket.emit("questionStarted", {
+    // Transform options to use sequential numbers for display
+    const questionForClient = {
       ...activeQuestion,
+      options: activeQuestion.options.map((opt, index) => ({
+        id: index + 1, // Send 1, 2, 3, 4 to frontend
+        text: opt.text,
+        isCorrect: opt.isCorrect
+      })),
       timeRemaining: getTimeRemaining()
-    });
+    };
+    
+    socket.emit("questionStarted", questionForClient);
   }
 
   // ===== STUDENT JOINS =====
@@ -118,10 +129,16 @@ io.on("connection", (socket) => {
     
     // If question is active, send it to new student
     if (questionActive && activeQuestion) {
-      socket.emit("questionStarted", {
+      const questionForClient = {
         ...activeQuestion,
+        options: activeQuestion.options.map((opt, index) => ({
+          id: index + 1,
+          text: opt.text,
+          isCorrect: opt.isCorrect
+        })),
         timeRemaining: getTimeRemaining()
-      });
+      };
+      socket.emit("questionStarted", questionForClient);
     } else {
       socket.emit("waitingForQuestion");
     }
@@ -129,27 +146,43 @@ io.on("connection", (socket) => {
 
   // ===== TEACHER CREATES NEW QUESTION =====
   socket.on("newQuestion", (questionData) => {
-    // Reset everything for new question
-    activeQuestion = questionData;
+    // Store question with original structure
+    activeQuestion = {
+      questionNumber: questionData.questionNumber,
+      question: questionData.question,
+      options: questionData.options, // Keep original options array
+      timeLimit: questionData.timeLimit,
+      correctAnswer: questionData.correctAnswer
+    };
+    
     answers = {};
     questionActive = true;
     questionStartTime = Date.now();
     
-    // Clear any existing timer
     if (questionTimer) {
       clearTimeout(questionTimer);
     }
     
     console.log(`📝 New question started: "${questionData.question}"`);
     console.log(`⏱️  Time limit: ${questionData.timeLimit}`);
+    console.log(`📊 Options:`, questionData.options.map(o => o.text));
     
-    // Broadcast question to all students
-    io.emit("questionStarted", {
-      ...activeQuestion,
+    // Transform options to sequential numbers for frontend
+    const questionForClient = {
+      questionNumber: activeQuestion.questionNumber,
+      question: activeQuestion.question,
+      options: activeQuestion.options.map((opt, index) => ({
+        id: index + 1, // 1, 2, 3, 4
+        text: opt.text,
+        isCorrect: opt.isCorrect
+      })),
+      timeLimit: activeQuestion.timeLimit,
       timeRemaining: questionData.timeLimit === "30 seconds" ? 30 : 60
-    });
+    };
     
-    // Set timeout based on timeLimit
+    io.emit("questionStarted", questionForClient);
+    
+    // Set timeout
     const timeLimit = questionData.timeLimit === "30 seconds" ? 30000 : 60000;
     questionTimer = setTimeout(() => {
       console.log("⏰ Question timeout - showing results");
@@ -158,8 +191,8 @@ io.on("connection", (socket) => {
   });
 
   // ===== STUDENT SUBMITS ANSWER =====
-  socket.on("submitAnswer", (selectedOptionId) => {
-    // Validate submission
+  socket.on("submitAnswer", (selectedNumber) => {
+    // selectedNumber is now 1, 2, 3, or 4
     if (!questionActive) {
       socket.emit("error", "No active question");
       return;
@@ -176,15 +209,20 @@ io.on("connection", (socket) => {
       return;
     }
 
-    // Record answer
-    answers[socket.id] = selectedOptionId;
-    const answerText = activeQuestion.options.find(o => o.id === selectedOptionId)?.text || "Unknown";
-    console.log(`✔️  ${student.name} answered: ${answerText}`);
+    // Validate answer is in range
+    if (selectedNumber < 1 || selectedNumber > activeQuestion.options.length) {
+      socket.emit("error", "Invalid answer");
+      return;
+    }
+
+    // Record answer (store the display number: 1, 2, 3, 4)
+    answers[socket.id] = selectedNumber;
     
-    // Confirm to the student
+    const answerText = activeQuestion.options[selectedNumber - 1]?.text || "Unknown";
+    console.log(`✔️  ${student.name} answered: ${selectedNumber}. ${answerText}`);
+    
     socket.emit("answerSubmitted");
     
-    // Update answer count for everyone
     io.emit("answerCount", {
       count: Object.keys(answers).length,
       total: students.length
@@ -198,7 +236,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  // ===== TEACHER REQUESTS CURRENT RESULTS (OPTIONAL) =====
+  // ===== TEACHER REQUESTS CURRENT RESULTS =====
   socket.on("getResults", () => {
     const results = calculateResults();
     socket.emit("currentResults", {
@@ -223,14 +261,12 @@ io.on("connection", (socket) => {
       console.log(`❌ Student disconnected: ${disconnectedStudent.name}`);
     }
     
-    // Update answer count
     if (questionActive) {
       io.emit("answerCount", {
         count: Object.keys(answers).length,
         total: students.length
       });
       
-      // Check if all remaining students answered
       if (students.length > 0 && Object.keys(answers).length === students.length) {
         clearTimeout(questionTimer);
         showResults();
@@ -249,7 +285,8 @@ app.get("/status", (req, res) => {
   res.json({
     students: students.length,
     activeQuestion: questionActive,
-    answers: Object.keys(answers).length
+    answers: Object.keys(answers).length,
+    question: activeQuestion?.question || null
   });
 });
 
