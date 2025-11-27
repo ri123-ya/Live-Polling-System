@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = 'http://localhost:5000';
+const SOCKET_URL = 'https://live-poling-backend-t1m6.onrender.com';
 
 export const socket = io(SOCKET_URL, {
   autoConnect: false, 
